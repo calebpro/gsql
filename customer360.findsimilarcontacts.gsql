@@ -1,0 +1,48 @@
+CREATE QUERY findSimilarContacts(set<vertex<Contact>> contactName) FOR GRAPH MyGraph API("v2") SYNTAX v2 {
+/**
+Find top 20 contacts who are similar to a specific contact
+
+Sample Input: Sam-Eisenberg
+*/
+
+  SetAccum<vertex> @Agg_3_numberOfCampaignsJoinedTogether_set;
+  SumAccum<int> @Agg_3_numberOfCampaignsJoinedTogether;
+
+  VertexSet_1 = { contactName };
+  VertexSet_3 = 
+        SELECT alias_schema_3
+        FROM VertexSet_1:c1 -(is_connected_to>:alias_schema_6)- CampaignMember:alias_schema_2,
+             CampaignMember:alias_schema_2 -(is_part_of>:alias_schema_7)- Campaign:campaign,
+             CampaignMember:alias_schema_4 -(is_part_of>:alias_schema_9)- Campaign:campaign,
+             Contact:alias_schema_3 -(is_connected_to>:alias_schema_8)- CampaignMember:alias_schema_4
+        ACCUM alias_schema_3.@Agg_3_numberOfCampaignsJoinedTogether_set += campaign
+        POST-ACCUM alias_schema_3.@Agg_3_numberOfCampaignsJoinedTogether = alias_schema_3.@Agg_3_numberOfCampaignsJoinedTogether_set.size()
+        ORDER BY alias_schema_3.@Agg_3_numberOfCampaignsJoinedTogether DESC
+        LIMIT 20
+        ;
+
+
+  PRINT VertexSet_3[
+    VertexSet_3.FirstName AS FirstName,
+    VertexSet_3.LastName AS LastName,
+    VertexSet_3.Phone AS Phone,
+    VertexSet_3.Email AS Email,
+    VertexSet_3.Title AS Title,
+    VertexSet_3.Department AS Department,
+    VertexSet_3.LeadSource AS LeadSource,
+    VertexSet_3.Description AS Description,
+    VertexSet_3.Contact_Ownerid AS Contact_Ownerid,
+    VertexSet_3.Has_Opted_Out_Of_Email AS Has_Opted_Out_Of_Email,
+    VertexSet_3.DoNotCall AS DoNotCall,
+    VertexSet_3.CreatedDate AS CreatedDate,
+    VertexSet_3.CreatedByid AS CreatedByid,
+    VertexSet_3.LastModifiedDate AS LastModifiedDate,
+    VertexSet_3.LastModifiedByid AS LastModifiedByid,
+    VertexSet_3.Free_Trial_Start_date AS Free_Trial_Start_date,
+    VertexSet_3.Free_Trial_Status AS Free_Trial_Status,
+    VertexSet_3.Signed_Up_For_Free_Trial_On AS Signed_Up_For_Free_Trial_On,
+    VertexSet_3.Dev_edition_Date_Signed_Up AS Dev_edition_Date_Signed_Up,
+    VertexSet_3.Employee_Band AS Employee_Band,
+    VertexSet_3.Original_Lead_Source AS Original_Lead_Source,
+    VertexSet_3.@Agg_3_numberOfCampaignsJoinedTogether AS numberOfCampaignsJoinedTogether
+  ];
